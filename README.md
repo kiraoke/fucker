@@ -1,13 +1,16 @@
 # fucker
 
-`fucker init <folder>`
+`fucker create <folder>`
 create a `folder`folder in home directory
 create a `folder/data` folder `inialize git in this`
 create a `folder/.fucker` folder `initialize git lfs in this`
 
+`fucker repo <url>`
+adds github url in /.fucker
+
 Store files in `folder/data`
 
-`fucker split <msg>`
+`fucker update <msg>`
 Will check output of `git status`
 
 Creates a list of files which are added or modified

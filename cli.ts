@@ -1,3 +1,18 @@
-import {parseArgs} from "@std/cli";
+import yargs from "https://deno.land/x/yargs/deno.ts";
+import { Arguments } from "https://deno.land/x/yargs/deno-types.ts";
+import create from "./create.ts";
+import update from "./update.ts";
 
-const args = parseArgs(Deno.args)
+yargs(Deno.args)
+  .command("create <folder...>", "create a fucker folder", (yargs: any) => {
+    return yargs.positional("folder", {
+      describe: "a folder",
+    });
+  }, (argv: Arguments) => {
+    const [folder] = argv.folder;
+    create(folder);
+  })
+  .command("update", "update fucker", () => {}, update)
+  .strictCommands()
+  .demandCommand(1)
+  .parse();
