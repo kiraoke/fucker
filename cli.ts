@@ -6,7 +6,7 @@ import update from "./update.ts";
 yargs(Deno.args)
   .command("create <folder...>", "create a fucker folder", (yargs: any) => {
     return yargs.positional("folder", {
-      describe: "a folder",
+      describe: "provide the name of a folder where to initialize fucker",
     });
   }, (argv: Arguments) => {
     const [folder] = argv.folder;

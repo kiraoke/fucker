@@ -1,5 +1,5 @@
 import { error, msg, success } from "./colors.ts";
-import {simpleGit} from "npm:simple-git"
+import { SimpleGit, simpleGit } from "npm:simple-git";
 
 async function create(folder: string) {
   try {
@@ -7,34 +7,17 @@ async function create(folder: string) {
     await Deno.mkdir(`${folder}/data`);
     await Deno.mkdir(`${folder}/.fucker`);
 
-    const initGit = new Deno.Command("git", {
-      args: ["init", `${folder}/data`],
-    });
+    const dataGit: SimpleGit = simpleGit(`${folder}/data`);
+    await dataGit.init();
+    console.log(msg(`Initialized empty git repository in ${folder}/data`));
 
-    const dataGit = simpleGit(`${folder}/data`)
-
-    const { code: code1, stdout: stdout1, stderr: stderr1 } = await initGit
-      .output();
-
-    // there is an error
-    if (code1 !== 0) throw new Error(new TextDecoder().decode(stderr1));
-    console.log(msg(`${new TextDecoder().decode(stdout1)}`));
-
-    // do shit in .fucker
-
-    const initGit2 = new Deno.Command("git", {
-      args: ["init", `${folder}/.fucker`],
-    });
-
-    const { code: code2, stdout: stdout2, stderr: stderr2 } = await initGit2
-      .output();
-
-    if (code2 !== 0) throw new Error(new TextDecoder().decode(stderr2));
-    console.log(msg(`${new TextDecoder().decode(stdout2)}`));
+    const fuckerGit: SimpleGit = simpleGit(`${folder}/.fucker`);
+    await fuckerGit.init();
+    console.log(msg(`Initialized empty git repository in ${folder}/.fucker`));
 
     console.log(
       success(
-        `Successfully created a new fucker project in ${folder}`,
+        `\nSuccessfully created a new fucker project in ${folder}`,
       ),
     );
   } catch (err) {

@@ -1,52 +1,77 @@
-import {MEGABYTE_IN_64_KB} from "./constants.ts";
+import { error } from "./colors.ts";
+import { MEGABYTE_IN_64_KB, Meta } from "./constants.ts";
 
+async function split(
+  file: ReadableStreamDefaultReader<Uint8Array>,
+  name: string,
+  outputDir: string,
+) {
+  try {
+    let pushed: number = 0;
+    let chunk: number = 0;
 
-async function split(file: ReadableStreamDefaultReader<Uint8Array>) {
-  let pushed = 0;
-  let chunk = 0;
+    await Deno.mkdir(outputDir);
 
-  await Deno.mkdir("output");
-
-  let writer = (await Deno.open("output/out.fuck", {
-    append: true,
-    createNew: true,
-  })).writable.getWriter();
-
-  let ready = false;
-
-  await writer.ready;
-
-  ready = true;
-
-  while (true) { // it splits into 64kb chunks
-    if (!ready) break;
-
-    const { value, done } = await file.read();
-
-    if (done) break;
-
-    await writer.write(value);
-    pushed++;
-
-    if (pushed === MEGABYTE_IN_64_KB) { // 25 mbs done
-      pushed = 0;
-      chunk++;
-
-      writer = (await Deno.open(`output/out${chunk}.fuck`, {
+    let writer: WritableStreamDefaultWriter<Uint8Array> =
+      (await Deno.open(`${outputDir}/out.fuck`, {
         append: true,
         createNew: true,
       })).writable.getWriter();
 
-      ready = false;
+    let ready: boolean = false;
 
-      await writer.ready;
+    await writer.ready;
 
-      ready = true;
+    ready = true;
+
+    while (true) { // it splits into 64kb chunks
+      if (!ready) break;
+
+      const { value, done }: ReadableStreamReadResult<Uint8Array> = await file
+        .read();
+
+      if (done) break;
+
+      await writer.write(value);
+      pushed++;
+
+      if (pushed === MEGABYTE_IN_64_KB) { // 25 mbs done
+        pushed = 0;
+        chunk++;
+
+        writer = (await Deno.open(`${outputDir}/out${chunk}.fuck`, {
+          append: true,
+          createNew: true,
+        })).writable.getWriter();
+
+        ready = false;
+
+        await writer.ready;
+
+        ready = true;
+      }
     }
-  }
 
-  await writer.close();
-  console.log("done probably ig");
+    await writer.close();
+
+    const metaWriter: WritableStreamDefaultWriter<Uint8Array> =
+      (await Deno.open(`${outputDir}/meta.json`, {
+        append: true,
+        createNew: true,
+      })).writable.getWriter();
+
+    const meta: Meta = {
+      name: name,
+      dirName: outputDir,
+      timestamp: Date.now(),
+    };
+
+    metaWriter.write(new TextEncoder().encode(JSON.stringify(meta)));
+
+    metaWriter.close();
+  } catch (err) {
+    console.log(error(`Error splitting file: ${name} ${err}`));
+  }
 }
 
-export default split
+export default split;
