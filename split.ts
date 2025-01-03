@@ -1,5 +1,12 @@
+import { ensureDir } from "jsr:@std/fs/ensure-dir";
 import { error } from "./colors.ts";
-import { MEGABYTE_IN_64_KB, Meta } from "./constants.ts";
+import { MEGABYTE_IN_64_KB } from "./constants.ts";
+
+export type Meta = {
+  name: string;
+  dirName: string;
+  timestamp: number;
+};
 
 async function split(
   file: ReadableStreamDefaultReader<Uint8Array>,
@@ -10,10 +17,10 @@ async function split(
     let pushed: number = 0;
     let chunk: number = 0;
 
-    await Deno.mkdir(outputDir);
+    await ensureDir(outputDir);
 
     let writer: WritableStreamDefaultWriter<Uint8Array> =
-      (await Deno.open(`${outputDir}/out.fuck`, {
+      (await Deno.open(`${outputDir}/${name}.fuck`, {
         append: true,
         createNew: true,
       })).writable.getWriter();
@@ -39,7 +46,7 @@ async function split(
         pushed = 0;
         chunk++;
 
-        writer = (await Deno.open(`${outputDir}/out${chunk}.fuck`, {
+        writer = (await Deno.open(`${outputDir}/${name}${chunk}.fuck`, {
           append: true,
           createNew: true,
         })).writable.getWriter();

@@ -1,18 +1,60 @@
-import yargs from "https://deno.land/x/yargs/deno.ts";
-import { Arguments } from "https://deno.land/x/yargs/deno-types.ts";
-import create from "./create.ts";
-import update from "./update.ts";
+import {
+  cancel,
+  intro,
+  isCancel,
+  outro,
+  select,
+  text,
+} from "npm:@clack/prompts";
+import { command } from "./constants.ts";
+import process from "node:process";
+import add from "./add.ts";
+import init from "./init.ts";
 
-yargs(Deno.args)
-  .command("create <folder...>", "create a fucker folder", (yargs: any) => {
-    return yargs.positional("folder", {
-      describe: "provide the name of a folder where to initialize fucker",
+async function cli() {
+  await init();
+
+  intro("Welcome to fucker");
+
+  // select command
+  const commandType = await select({
+    message: "Choose a task.",
+    options: [
+      { value: command.add, label: "Add a file" },
+      { value: command.get, label: "Get a file" },
+    ],
+  });
+
+  if (isCancel(commandType)) {
+    cancel("Operation cancelled.");
+    process.exit(0);
+  }
+
+  if (commandType === command.add) {
+    const file = await text({
+      message: "Enter the file name",
+      validate: (value) => {
+        if (!value) return "File name cannot be empty";
+      },
     });
-  }, (argv: Arguments) => {
-    const [folder] = argv.folder;
-    create(folder);
-  })
-  .command("update", "update fucker", () => {}, update)
-  .strictCommands()
-  .demandCommand(1)
-  .parse();
+
+    if (isCancel(file)) {
+      cancel("Operation cancelled.");
+      process.exit(0);
+    }
+
+    await add(file);
+  } else if (commandType === command.get) {
+    const file = await text({
+      message: "Enter the file name",
+      validate: (value) => {
+        if (!value) return "File name cannot be empty";
+      },
+    });
+  }
+
+  outro("Hope you had good fun");
+  process.exit(0);
+}
+
+await cli();

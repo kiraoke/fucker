@@ -5,4 +5,14 @@ const randomID: () => string = customAlphabet(
   10,
 );
 
-export { randomID };
+export type Spinner = () => {
+    start: (msg?: string) => void;
+    stop: (msg?: string, code?: number) => void;
+    message: (msg?: string) => void;
+};
+
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+export { randomID , sleep};
