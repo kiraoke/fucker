@@ -6,7 +6,7 @@ import {
   select,
   text,
 } from "npm:@clack/prompts";
-import { command } from "./constants.ts";
+import { command } from "../utils/constants.ts";
 import process from "node:process";
 import add from "./add.ts";
 import init from "./init.ts";
@@ -31,7 +31,7 @@ async function cli() {
   }
 
   if (commandType === command.add) {
-    const file = await text({
+    const file: string | symbol = await text({
       message: "Enter the file name",
       validate: (value) => {
         if (!value) return "File name cannot be empty";
@@ -41,6 +41,10 @@ async function cli() {
     if (isCancel(file)) {
       cancel("Operation cancelled.");
       process.exit(0);
+    }
+
+    if (typeof file === "symbol") {
+      throw new Error("Invalid file name");
     }
 
     await add(file);

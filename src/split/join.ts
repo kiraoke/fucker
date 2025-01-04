@@ -13,8 +13,6 @@ async function join() {
   }
 
   writer.close();
-
-  console.log("ig done");
 }
 
 

@@ -1,7 +1,10 @@
-import { drizzle } from "npm:drizzle-orm/postgres-js";
+import postgres from "npm:postgres";
 
-const db_url: string | undefined = Deno.env.get("DATABASE_URL");
+const connectionString: string | undefined = Deno.env.get("DATABASE_URL");
+if (!connectionString) {
+  throw new Error("DATABASE_URL must be set");
+}
 
-if (!db_url) throw new Error("DATABASE_URL environment variable not set");
+const db = postgres(connectionString);
 
-const db = drizzle(db_url);
+export default db;

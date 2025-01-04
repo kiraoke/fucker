@@ -1,6 +1,6 @@
 import { ensureDir } from "jsr:@std/fs";
-import { error } from "./colors.ts";
-import { rootPath } from "./constants.ts";
+import { error } from "../utils/colors.ts";
+import { rootPath } from "../utils/constants.ts";
 
 async function init() {
   try {
