@@ -6,6 +6,7 @@ import { randomID } from "../utils/utils.ts";
 import { error } from "../utils/colors.ts";
 import { sendFile } from "../bot/bot.ts";
 import { addFiles } from "../db/ops.ts";
+import { addFileToCache } from "../db/cache.ts";
 
 async function add(file: string) {
   try {
@@ -54,9 +55,24 @@ async function add(file: string) {
 
     spin.start("Adding file to database");
 
-    await addFiles(SqlString.escape(fileName), urls);
+    const id: number = await addFiles(SqlString.escape(fileName), urls);
 
     spin.stop("File added to database");
+
+    spin.start("Adding file to cache");
+
+    await addFileToCache({
+      id: id,
+      fileName: fileName,
+    });
+
+    spin.stop("File added to cache");
+
+    spin.start("Cleaning up");
+
+    await Deno.remove(outDir, { recursive: true });
+
+    spin.stop("Cleaned up");
   } catch (err) {
     console.log(error(`Error adding file: ${err}`));
   }

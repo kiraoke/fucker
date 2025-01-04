@@ -12,9 +12,13 @@ get id of the file
 add it to a database
 
 fucker get `file`
-searches file in the database
-returns a list of results
-let user choose
+for search results create a list of files in ~/.fucker
+fuck.json
+with timestamp at top
+filenames and their id so to make a search result kinda hint thingy
+use fuzzy search
+find that file from db
+if file not found return error
 let user make a choice of path with default being ./<filename>
 downloads splits in `~/.fucker/<filename>`
 join the splits in path
