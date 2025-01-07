@@ -8,7 +8,7 @@ const token: string | undefined = Deno.env.get("BOT_TOKEN");
 
 if (!token) throw new Error("BOT_TOKEN is not provided");
 
-const bot = new Bot(token);
+const bot: Bot = new Bot(token);
 
 async function sendFile(filePath: string, channel: string): Promise<string> {
   const msg: Message.DocumentMessage = await bot.api.sendDocument(

@@ -15,7 +15,7 @@ async function init() {
     const timestamp: number = await getCacheTimestamp();
     const currentTimestamp: number = Date.now();
 
-    const distance = daysBetweenDates(currentTimestamp, timestamp);
+    const distance: number = daysBetweenDates(currentTimestamp, timestamp);
 
     if (distance >= 1) {
       const files = await getFiles();
