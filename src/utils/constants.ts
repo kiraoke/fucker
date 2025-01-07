@@ -1,4 +1,4 @@
-export const MEGABYTE_IN_64_KB = 400; // 25 megabytes = 400 x 64 kilobytes
+export const MEGABYTE_IN_64_KB = 200; // 15 megabytes = 200 x 64 kilobytes
 
 interface Command {
   add: "add";
