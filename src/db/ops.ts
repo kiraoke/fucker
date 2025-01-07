@@ -19,7 +19,7 @@ export async function getFile(fileName: string): Promise<Files | undefined> {
   const result: Files[] = await db`
     SELECT * FROM files
     WHERE file_name = ${fileName}
-    ` as Files[];
+    ` as Files[]; // filename must be in '' because of escaping sql before
 
   return result[0];
 }

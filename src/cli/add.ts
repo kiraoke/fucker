@@ -1,5 +1,4 @@
 import { spinner } from "npm:@clack/prompts";
-import SqlString from "npm:sqlstring";
 import split from "../split/split.ts";
 import { rootPath } from "../utils/constants.ts";
 import { randomID } from "../utils/utils.ts";
@@ -46,8 +45,7 @@ async function add(file: string) {
       const filePath: string = `${outDir}/${dirEntry.name}`;
 
       const url: string = await sendFile(filePath, channel);
-      const escapedUrl: string = SqlString.escape(url);
-      urls.push(escapedUrl);
+      urls.push(url);
 
       index++;
       spin.stop("");
@@ -55,7 +53,7 @@ async function add(file: string) {
 
     spin.start("Adding file to database");
 
-    const id: number = await addFiles(SqlString.escape(fileName), urls);
+    const id: number = await addFiles(fileName, urls);
 
     spin.stop("File added to database");
 

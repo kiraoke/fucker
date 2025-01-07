@@ -62,23 +62,7 @@ async function split(
     }
 
     await writer.close();
-
-    const metaWriter: WritableStreamDefaultWriter<Uint8Array> =
-      (await Deno.open(`${outputDir}/meta.json`, {
-        append: true,
-        createNew: true,
-      })).writable.getWriter();
-
-    const meta: Meta = {
-      name: name,
-      dirName: outputDir,
-      timestamp: Date.now(),
-    };
-
-    metaWriter.write(new TextEncoder().encode(JSON.stringify(meta)));
-
-    metaWriter.close();
-  } catch (err) {
+ } catch (err) {
     console.log(error(`Error splitting file: ${name} ${err}`));
   }
 }

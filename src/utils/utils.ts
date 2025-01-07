@@ -39,9 +39,4 @@ async function downloadFile(url: string, destination: string): Promise<void> {
   await Deno.writeFile(destination, fileStream);
 }
 
-const hayasaka: string =
-  "https://i.pinimg.com/736x/6f/47/ee/6f47ee4be36e3400ed57807e819e9946.jpg";
-
-downloadFile(hayasaka, "haya.jpg");
-
 export { daysBetweenDates, downloadFile, randomID, sleep };
