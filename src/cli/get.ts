@@ -1,32 +1,23 @@
-import { spinner, text } from "npm:@clack/prompts";
 import { ensureDir } from "jsr:@std/fs";
 import { Files, getFile } from "../db/ops.ts";
 import { error } from "../utils/colors.ts";
 import { rootPath } from "../utils/constants.ts";
 import { downloadFile, randomID } from "../utils/utils.ts";
 import join from "../split/join.ts";
+import ora from "npm:ora";
+import cliSpinners from "npm:cli-spinners";
 
-async function get(fileName: string) {
-  const spin = spinner();
+async function get(fileName: string, destination: string): Promise<void> {
+  const spin = ora({
+    text: "Initiating download",
+    spinner: cliSpinners.circleQuarters,
+    color: "white",
+  });
 
   try {
     spin.start("Initiating download");
-
     const files: Files | undefined = await getFile(fileName);
     if (!files) throw new Error("File not found");
-
-    spin.stop("Found file in Database");
-
-    const destination: string | symbol = await text({
-      message: "Enter file destination",
-      validate: (value) => {
-        if (!value) return "Destination cannot be empty";
-      },
-    });
-
-    if (typeof destination === "symbol") {
-      throw new Error("Invalid destination");
-    }
 
     await ensureDir(destination);
 
@@ -35,7 +26,7 @@ async function get(fileName: string) {
 
     await Deno.mkdir(tempLocation, { recursive: true });
 
-    spin.stop("Initiated files");
+    spin.stop();
 
     for (let i = 0; i < files.urls.length; i++) {
       spin.start(`Downloading part: ${i}`);
@@ -45,7 +36,7 @@ async function get(fileName: string) {
 
       await downloadFile(url, destination);
 
-      spin.stop(`Downloaded part: ${i}`);
+      spin.stop();
     }
 
     spin.start("Joining files");
@@ -54,15 +45,15 @@ async function get(fileName: string) {
 
     await join(location, tempLocation);
 
-    spin.stop("");
+    spin.stop();
 
     spin.start("Cleaning up");
 
     await Deno.remove(tempLocation, { recursive: true });
 
-    spin.stop(`Joined files at ${location}`);
+    spin.stop();
   } catch (err) {
-    spin.stop("Error");
+    spin.stop();
     console.log(error(`Error: ${err}`));
   }
 }

@@ -4,6 +4,7 @@ import { msg } from "../utils/colors.ts";
 import cliSpinners from "npm:cli-spinners";
 import ora from "npm:ora";
 import { getFileNames } from "../db/ops.ts";
+import get from "./get.ts";
 
 function printHelp(): void {
   console.log(msg(`
@@ -51,41 +52,57 @@ function parseArguments(args: string[]): Args {
 type Command = "list" | "get" | "add" | undefined;
 
 async function main(): Promise<void> {
-  const args: Args = parseArguments(Deno.args);
+  try {
+    const args: Args = parseArguments(Deno.args);
 
-  if (args.help) {
-    printHelp();
-    Deno.exit(0);
-  }
-
-  const command: Command = args._[0] as Command;
-
-  if (!command) {
-    console.error(error("No command provided."));
-    Deno.exit(1);
-  }
-
-  const destination: string | undefined = args.destination;
-  const source: string | undefined = args.source;
-
-  if (command === "list") {
-    const spinner = ora({
-      text: "Loading files",
-      spinner: cliSpinners.circleQuarters,
-      color: "white",
-    });
-
-    spinner.start();
-
-    const files: string[] = await getFileNames();
-
-    spinner.stop();
-
-    for (let i = 0; i < files.length; i++) {
-      console.log(success(files[i]));
+    if (args.help) {
+      printHelp();
+      Deno.exit(0);
     }
 
-    Deno.exit(0);
+    const command: Command = args._[0] as Command;
+
+    if (!command) throw new Error("Command not provided");
+
+    const destination: string | undefined = args.destination;
+    const source: string | undefined = args.source;
+
+    if (command === "list") {
+      const spinner = ora({
+        text: "Loading files",
+        spinner: cliSpinners.circleQuarters,
+        color: "white",
+      });
+
+      spinner.start();
+
+      const files: string[] = await getFileNames();
+
+      spinner.stop();
+
+      for (let i = 0; i < files.length; i++) {
+        console.log(success(files[i]));
+      }
+
+      Deno.exit(0);
+    }
+
+    if (command === "get") {
+      const file: string | number = args._[1];
+
+      if (typeof file === "number") throw new Error("Invalid file name");
+
+      if (!destination) throw new Error("Destination not provided");
+
+      await get(file, destination);
+
+      console.log(success(`File ${file} downloaded to ${destination}/${file}`));
+
+      Deno.exit(0);
+    }
+  } catch (err) {
+    console.log(error(`Error: ${err}`));
+    Deno.exit(1);
   }
 }
 
