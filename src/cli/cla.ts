@@ -5,6 +5,7 @@ import cliSpinners from "npm:cli-spinners";
 import ora from "npm:ora";
 import { getFileNames } from "../db/ops.ts";
 import get from "./get.ts";
+import add from "./add.ts";
 
 function printHelp(): void {
   console.log(msg(`
@@ -97,6 +98,16 @@ async function main(): Promise<void> {
       await get(file, destination);
 
       console.log(success(`File ${file} downloaded to ${destination}/${file}`));
+
+      Deno.exit(0);
+    }
+
+    if (command === "add") {
+      if (!source) throw new Error("Source not provided");
+
+      await add(source);
+
+      console.log(success(`File added to the database`));
 
       Deno.exit(0);
     }

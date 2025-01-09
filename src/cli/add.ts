@@ -1,4 +1,3 @@
-import { spinner } from "npm:@clack/prompts";
 import split from "../split/split.ts";
 import { rootPath } from "../utils/constants.ts";
 import { randomID } from "../utils/utils.ts";
@@ -6,10 +5,16 @@ import { error } from "../utils/colors.ts";
 import { sendFile } from "../bot/bot.ts";
 import { addFiles } from "../db/ops.ts";
 import { addFileToCache } from "../db/cache.ts";
+import ora from "npm:ora";
+import cliSpinners from "npm:cli-spinners";
 
 async function add(file: string) {
+  const spin = ora({
+    spinner: cliSpinners.circleQuarters,
+    color: "white",
+  });
+
   try {
-    const spin = spinner();
     spin.start("Splitting files");
 
     const channel: string | undefined = Deno.env.get("CHANNEL_NAME");
@@ -33,7 +38,7 @@ async function add(file: string) {
 
     await split(fileReader, fileName, outDir);
 
-    spin.stop(`Splitted ${fileName}`);
+    spin.stop();
 
     const urls: string[] = []; // a string will be about 200bytes so a 82gb file will only make 6.63mb of urls in memory so it is fine
     let index: number = 0;
@@ -48,14 +53,14 @@ async function add(file: string) {
       urls.push(url);
 
       index++;
-      spin.stop("");
+      spin.stop();
     }
 
     spin.start("Adding file to database");
 
     const id: number = await addFiles(fileName, urls);
 
-    spin.stop("File added to database");
+    spin.stop();
 
     spin.start("Adding file to cache");
 
@@ -64,14 +69,15 @@ async function add(file: string) {
       fileName: fileName,
     });
 
-    spin.stop("File added to cache");
+    spin.stop();
 
     spin.start("Cleaning up");
 
     await Deno.remove(outDir, { recursive: true });
 
-    spin.stop("Cleaned up");
+    spin.stop();
   } catch (err) {
+    spin.stop();
     console.log(error(`Error adding file: ${err}`));
   }
 }
