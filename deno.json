@@ -1,7 +1,7 @@
 {
   "tasks": {
     "dev": "deno run --watch main.ts"
-    "drizzle": "drizzle-kit push"
+    "start": "deno --env-file --allow-env --allow-net --allow-read --allow-write --allow-import src/cli/cli.ts"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@1",

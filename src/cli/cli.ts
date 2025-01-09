@@ -1,64 +1,120 @@
-import {
-  cancel,
-  intro,
-  isCancel,
-  outro,
-  select,
-  text,
-} from "npm:@clack/prompts";
-import { command } from "../utils/constants.ts";
-import process from "node:process";
-import add from "./add.ts";
+import { Args, parseArgs } from "@std/cli";
+import { error, success } from "../utils/colors.ts";
+import { msg } from "../utils/colors.ts";
+import cliSpinners from "npm:cli-spinners";
+import ora from "npm:ora";
+import { getFileNames } from "../db/ops.ts";
 import get from "./get.ts";
-import init from "./init.ts";
-import { error } from "../utils/colors.ts";
+import add from "./add.ts";
 
-async function cli() {
+function printHelp(): void {
+  console.log(msg(`
+      Usage: fucker [options]
+
+      Flags:
+      -h, --help                            Show this help message and exit.
+      -v, --version                         Show the version and exit.
+      
+      Commands:
+      list                                  List all the files in the database.
+      get <file> --destination <dest>       Get a file from the database and save it to the destination.
+      add --source <source>                 Add a file to the database from source path.
+
+      Alias:
+      -h -> --help
+      -v -> --version
+      -d -> --destination
+      -s -> --source
+   `));
+}
+
+function parseArguments(args: string[]): Args {
+  const booleanArgs = [
+    "help",
+    "version",
+  ];
+
+  const stringArgs = ["destination", "source"];
+
+  const alias = {
+    help: "h",
+    version: "v",
+    destination: "d",
+    source: "s",
+  };
+
+  return parseArgs(args, {
+    boolean: booleanArgs,
+    string: stringArgs,
+    alias: alias,
+  });
+}
+
+type Command = "list" | "get" | "add" | undefined;
+
+async function main(): Promise<void> {
   try {
-    intro("Welcome to fucker");
-    await init();
+    const args: Args = parseArguments(Deno.args);
 
-    // select command
-    type Command = symbol | "add" | "get";
-    const commandType: Command = await select({
-      message: "Choose a task.",
-      options: [
-        { value: command.add, label: "Add a file" },
-        { value: command.get, label: "Get a file" },
-      ],
-    });
-
-    if (isCancel(commandType)) {
-      cancel("Operation cancelled.");
-      process.exit(0);
+    if (args.help) {
+      printHelp();
+      Deno.exit(0);
     }
 
-    const file: string | symbol = await text({
-      message: "Enter the file name",
-      validate: (value) => {
-        if (!value) return "File name cannot be empty";
-      },
-    });
+    const command: Command = args._[0] as Command;
 
-    if (isCancel(file)) {
-      cancel("Operation cancelled.");
-      process.exit(0);
+    if (!command) throw new Error("Command not provided");
+
+    const destination: string | undefined = args.destination;
+    const source: string | undefined = args.source;
+
+    if (command === "list") {
+      const spinner = ora({
+        text: "Loading files",
+        spinner: cliSpinners.circleQuarters,
+        color: "white",
+      });
+
+      spinner.start();
+
+      const files: string[] = await getFileNames();
+
+      spinner.stop();
+
+      for (let i = 0; i < files.length; i++) {
+        console.log(success(files[i]));
+      }
+
+      Deno.exit(0);
     }
 
-    if (typeof file === "symbol") {
-      throw new Error("Invalid file name");
+    if (command === "get") {
+      const file: string | number = args._[1];
+
+      if (typeof file === "number") throw new Error("Invalid file name");
+
+      if (!destination) throw new Error("Destination not provided");
+
+      await get(file, destination);
+
+      console.log(success(`File ${file} downloaded to ${destination}/${file}`));
+
+      Deno.exit(0);
     }
 
-    if (commandType === command.add) await add(file);
+    if (command === "add") {
+      if (!source) throw new Error("Source not provided");
 
-    if (commandType === command.get) await get(file);
+      await add(source);
 
-    outro("Hope you had good fun");
-    process.exit(0);
+      console.log(success(`File added to the database`));
+
+      Deno.exit(0);
+    }
   } catch (err) {
     console.log(error(`Error: ${err}`));
-    process.exit(1);
+    Deno.exit(1);
   }
 }
 
-await cli();
+main();
