@@ -2,9 +2,13 @@ import db from "./db.ts";
 
 export type Files = {
   id: number;
-  fileName: string;
+  file_name: string;
   urls: string[];
   timestamp: Date;
+};
+
+type FileName = {
+  file_name: string;
 };
 
 export async function getFiles(): Promise<Files[]> {
@@ -15,11 +19,20 @@ export async function getFiles(): Promise<Files[]> {
   return result;
 }
 
+
+export async function getFileNames(): Promise<string[]> {
+  const result: FileName[] = await db`
+    SELECT file_name FROM files
+    ` as FileName[];
+
+  return result.map((file) => file.file_name);
+}
+
 export async function getFile(fileName: string): Promise<Files | undefined> {
   const result: Files[] = await db`
     SELECT * FROM files
     WHERE file_name = ${fileName}
-    ` as Files[]; // filename must be in '' because of escaping sql before
+    ` as Files[];
 
   return result[0];
 }
@@ -40,5 +53,3 @@ export async function addFiles(
 
   return id;
 }
-
-console.log(await getFile("test"));
